@@ -1,0 +1,25 @@
+[project]
+name = "mallorn"
+version = "0.1.0"
+description = ""
+authors = [
+    { name = "Nguyễn Tư Đức", email = "23021534@gmail.com" },
+    { name = "Phạm Trung Hiếu", email = "23021554@vnu.edu.vn "}
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+kaggle = "^1.8.2"
+pandas = "^2.3.3"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = ">=1.2.1,<2.0.0"
+
+[tool.poetry.scripts]
+kaggle-download = "scripts.kaggle:download"
