@@ -253,10 +253,8 @@ description = "Access Kaggle resources anywhere"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-files = [
-    {file = "kaggle-1.8.2-py3-none-any.whl", hash = "sha256:5cbe52d0d225ce69222afd02121e781f614534dd8633370a5124d7de29596a66"},
-    {file = "kaggle-1.8.2.tar.gz", hash = "sha256:d3945c32ce6f81046592d14f6d233ee1aec92769682fce4b05b3409e086db5f7"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 black = ">=24.10.0"
@@ -273,6 +271,12 @@ tqdm = "*"
 types-requests = "*"
 types-tqdm = "*"
 urllib3 = ">=1.15.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/NTDuck/kaggle-api.git"
+reference = "main"
+resolved_reference = "fe304755f030d45676fd22eb686d37065abadada"
 
 [[package]]
 name = "kagglesdk"
@@ -854,4 +858,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "89bb3e362a6b393d9ca1f3c856210a971d91624b16e94e643160876aa56c40e5"
+content-hash = "20b7dcd7a443f3d51157d5a2fe9131d15abf02d7318b43e719da034277c0cf38"

@@ -15,7 +15,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-kaggle = "^1.8.2"
+kaggle = { git = "https://github.com/NTDuck/kaggle-api.git", branch = "main" }
 pandas = "^2.3.3"
 
 [tool.poetry.group.dev.dependencies]

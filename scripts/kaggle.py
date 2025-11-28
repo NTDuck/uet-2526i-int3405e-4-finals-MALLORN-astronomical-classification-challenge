@@ -27,7 +27,7 @@ def __load_kaggle() -> KaggleApi:
     """
     load_dotenv()
     
-    kaggle = KaggleApi()
+    kaggle = KaggleApi(enable_oauth=False)
     kaggle.read_config_environment()
     kaggle.authenticate()
 
