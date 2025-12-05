@@ -8,7 +8,7 @@ authors = [
 ]
 license = "BSD-3-Clause"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -17,6 +17,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dependencies]
 kaggle = { git = "https://github.com/NTDuck/kaggle-api.git", branch = "main" }
 pandas = "^2.3.3"
+numpy = "<2.3.0"
+scikit-learn = "^1.7.2"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = ">=1.2.1,<2.0.0"
