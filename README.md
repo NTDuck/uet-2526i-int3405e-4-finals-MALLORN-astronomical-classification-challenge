@@ -10,3 +10,9 @@ $ poetry run kaggle-download
 
 ## How to run
 ...
+
+## Reproducible steps
+```cmd
+$ poetry add autogluon
+$ poetry add "xgboost<3.1"
+```

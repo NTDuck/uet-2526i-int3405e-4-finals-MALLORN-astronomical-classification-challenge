@@ -15,13 +15,21 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-kaggle = { git = "https://github.com/NTDuck/kaggle-api.git", branch = "main" }
-pandas = "^2.3.3"
+autogluon = "^1.4.0"
+xgboost = "<3.1"
+lightgbm = "^4.6.0"
+catboost = "^1.2.8"
 numpy = "<2.3.0"
+pandas = "^2.3.3"
 scikit-learn = "^1.7.2"
+
+[tool.poetry.dependencies.kaggle]
+git = "https://github.com/NTDuck/kaggle-api.git"
+rev = "fe304755f030d45676fd22eb686d37065abadada"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = ">=1.2.1,<2.0.0"
 
 [tool.poetry.scripts]
 kaggle-download = "scripts.kaggle:download"
+autogluon = "mallorn.autogluon:main"
