@@ -29,6 +29,7 @@ rev = "fe304755f030d45676fd22eb686d37065abadada"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = ">=1.2.1,<2.0.0"
+ipykernel = "^7.1.0"
 
 [tool.poetry.scripts]
 kaggle-download = "scripts.kaggle:download"
