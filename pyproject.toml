@@ -22,6 +22,7 @@ catboost = "^1.2.8"
 numpy = "<2.3.0"
 pandas = "^2.3.3"
 scikit-learn = "^1.7.2"
+extinction = "^0.4.8"
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"

@@ -1654,6 +1654,60 @@ files = [
 tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipython", "littleutils", "pytest", "rich ; python_version >= \"3.11\""]
 
 [[package]]
+name = "extinction"
+version = "0.4.8"
+description = "Fast interstellar dust extinction laws"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "extinction-0.4.8-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:049cf43a2f766585ea8b043fb15dac06875e76531c9becc5bbd756978bdd25bf"},
+    {file = "extinction-0.4.8-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2b8ada07ece51dd07f04c534eb0d451e0550ac5f46ed596a47bd5ac0b117cb98"},
+    {file = "extinction-0.4.8-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:a05d506a2cd527103408a965b3cc9445ee40c9c75d84e2af272d2446d1284cdb"},
+    {file = "extinction-0.4.8-cp310-cp310-win32.whl", hash = "sha256:f96e0724314dff41473cdf7857fc0838958ae5fe81cab9931d5a883869123412"},
+    {file = "extinction-0.4.8-cp310-cp310-win_amd64.whl", hash = "sha256:feb99e0344908a4fcdb7d7638a9db364529c01baa40fa7b927b2fa5948fe757b"},
+    {file = "extinction-0.4.8-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:8c4739fd7cb416cc2cf9e821533be94e012611d35d404b8094a36b316ef8e4a3"},
+    {file = "extinction-0.4.8-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:22473423a3461ae1c46224ac0a459db0dd847c08a02a16262db97beac3208a71"},
+    {file = "extinction-0.4.8-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:c1338650aaeb7096e310212471e1d22f25c6813a438eaa66863c3fa88b25c473"},
+    {file = "extinction-0.4.8-cp311-cp311-win32.whl", hash = "sha256:20fffd92900fafc8572909f90c12ae39844ed41b215f7e7b9c8c7a682b5d430f"},
+    {file = "extinction-0.4.8-cp311-cp311-win_amd64.whl", hash = "sha256:f008fe6ce3adda8493c996eedb1d689b3cebcc4944689e7a2c704e96fe07c9af"},
+    {file = "extinction-0.4.8-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:5e1e8e24605dbe62ea6ae53b9f3a8592947bacebfe60dd94a4a143f96f0ea40a"},
+    {file = "extinction-0.4.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5b20cf870d7857e5566e49c87a48b52180be087317094067187c2e7d64a39612"},
+    {file = "extinction-0.4.8-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:d033966dfe7237ebaabee7d32f88ae59ea396c7b8bfebbda4d4704266533bfdc"},
+    {file = "extinction-0.4.8-cp312-cp312-win32.whl", hash = "sha256:a2f13c2a8392fed28738e2b4a72d999f9dfb3321eacb2b3a1e417efc1f683427"},
+    {file = "extinction-0.4.8-cp312-cp312-win_amd64.whl", hash = "sha256:d6883d5e8f974ca49ed5b988be42b3ba1d6c6634b3d1c05dfc994a664fb6ac04"},
+    {file = "extinction-0.4.8-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:9711c0154b7193ffb86899a22a2b6ae4574653567fa5013e7984f0cf32ed7bce"},
+    {file = "extinction-0.4.8-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:dc37a8749c0f26c534514e4fd9b25f164f69a5c37ac228fe68782e36b0b504c3"},
+    {file = "extinction-0.4.8-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:25251731e2a504f6a2baa5894a6fd93beafcf0d54977783404db0fb29259597b"},
+    {file = "extinction-0.4.8-cp313-cp313-win32.whl", hash = "sha256:856716d0b6efddbdd82761ef752ba5d49a59f0f3b53ed77a79b3c927260fd295"},
+    {file = "extinction-0.4.8-cp313-cp313-win_amd64.whl", hash = "sha256:e13d71fa472d7125d53124f6ddfc28f45119baf4f7a69648163be15b244fadc2"},
+    {file = "extinction-0.4.8-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:6d635ff134274a879a03e0c9f52977fc4dfc2149594ec79e9f3223bd020bac1c"},
+    {file = "extinction-0.4.8-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:26394f878ed40aca182467f365a77947c16eddd9815b24993e5da239589310eb"},
+    {file = "extinction-0.4.8-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:559a7bf2b613d031d35f03d4f9c07efb085c4f57e82a98c852c57ea4f4c03995"},
+    {file = "extinction-0.4.8-cp314-cp314-win32.whl", hash = "sha256:2872d7009a4afcc43d9e0866a2d960178e4c78c504cc89e5a8a18b578424cf88"},
+    {file = "extinction-0.4.8-cp314-cp314-win_amd64.whl", hash = "sha256:8b9dae7696eaf0e3b7caf4515088ca0924422c8c3027233bdaddc7a37a418daa"},
+    {file = "extinction-0.4.8-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:d172f61048dd018821a12468baa2efbd6602c0790c209e63c69acd1bf7e4f03f"},
+    {file = "extinction-0.4.8-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9cbc836430c22f2e06e738ad63d5fcb7aef190e74cda1255e49e39321a09d800"},
+    {file = "extinction-0.4.8-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:4b0b0e48ee4d61ef8015ada64f4cfeb036284df68f95507b303be9df6cfc8c38"},
+    {file = "extinction-0.4.8-cp314-cp314t-win32.whl", hash = "sha256:58b0067834e7caaa6e65aa962d14de596f0c0673aa40406fd251969d15fe4eff"},
+    {file = "extinction-0.4.8-cp314-cp314t-win_amd64.whl", hash = "sha256:a5fbbe10190a51b7a98d7ff7c45c561dd3979f7857d12f13fe30adee431ce11e"},
+    {file = "extinction-0.4.8-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:0483096206678fa3a24e6f7d44ed54ad40f7815b3ff5c70626ab072cc6b704af"},
+    {file = "extinction-0.4.8-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:569a9bf094641c5ab2d2df7b41478e62fedaae6c848dfeedd8c40058b9dc4a17"},
+    {file = "extinction-0.4.8-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:913cb0491029949ee6172e44318ed54290a6b07944c98727cd8d23a65bd37524"},
+    {file = "extinction-0.4.8-cp38-cp38-win32.whl", hash = "sha256:02d4c11e27141751e8effd752df501465837014dbb752801c65f52da2150c46e"},
+    {file = "extinction-0.4.8-cp38-cp38-win_amd64.whl", hash = "sha256:6bbbbfd874ea1bbf22a5e50998a71a596dc9913100a7d5016fab55ad0b2923bd"},
+    {file = "extinction-0.4.8-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:7cda1c9ab9b0e56634b19e89fcf8afd73f25ce2bf9e8b9afbd1f94e5ea360494"},
+    {file = "extinction-0.4.8-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:67a6542d1f0d0d650547009962fb3d72c6d9f966deaa98581f08f1c9dc24491e"},
+    {file = "extinction-0.4.8-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:0e7d272ce598c407853f54a649c560cbe73eb28feb8d6e34bb66835b9d2316b7"},
+    {file = "extinction-0.4.8-cp39-cp39-win32.whl", hash = "sha256:586c88343f01f403a5a5173994a21adf2ae61f1f4b290a2ee5bcc680d5488f19"},
+    {file = "extinction-0.4.8-cp39-cp39-win_amd64.whl", hash = "sha256:8a3e519636fa267cc4f14f9f0a71db97751ac1db58988dfd7923da46cf9fae38"},
+    {file = "extinction-0.4.8.tar.gz", hash = "sha256:8b2bd7cfd7b027de2bd18ed813235441ccbdd832f987928282714327c8d3aebb"},
+]
+
+[package.dependencies]
+numpy = ">=1.13.3"
+
+[[package]]
 name = "fastai"
 version = "2.8.5"
 description = "fastai simplifies training fast and accurate neural nets using modern best practices"
@@ -8708,4 +8762,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "22432078b98d3172920625bab95c32e8f7f5430f10da861aceba6adeea5a8210"
+content-hash = "15b9372bcac8f6f402227abbd283d0c532fdec065f20afe9a47ae64b559ebf10"

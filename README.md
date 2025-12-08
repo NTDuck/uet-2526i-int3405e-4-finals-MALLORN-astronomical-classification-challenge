@@ -11,8 +11,12 @@ $ poetry run kaggle-download
 ## How to run
 ...
 
-## Reproducible steps
+## __@__Reproducible
 ```cmd
 $ poetry add autogluon
 $ poetry add "xgboost<3.1"
 ```
+
+## Key takeaways
+- The continuum of TDEs is well described by a thermal blackbody.
+- At face value, they do appear to have a light curve that follows the general shape of the theoretical TDE fallback rate. In fact, when one fits a t^-5/3 power law to the light curve on its decline from peak, there is a strong correlation with the time of peak since the inferred time of disruption, delta_t = t_peak - t_D, and the estimated black hole mass, where delta_t ^^ M^1/2_BH, as would be expected for the fallback timescale. (partial TDEs fits t^-9/4 though...)
