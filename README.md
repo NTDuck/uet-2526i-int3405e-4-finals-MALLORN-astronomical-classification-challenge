@@ -1,21 +1,24 @@
 # uet-2526i-int3405e-4-finals-MALLORN-astronomical-classification-challenge
 > https://www.kaggle.com/competitions/mallorn-astronomical-classification-challenge/
 
+## Prerequisites
+- Python 3.14
+- Poetry 2.2.1
+
 ## How to install
+
+<!-- $ poetry env use python3.14 -->
 ```cmd
-$ poetry env use python3.12
 $ poetry install
+```
+
+This downloads the Kaggle dataset for the competition.
+```cmd
 $ poetry run kaggle-download
 ```
 
 ## How to run
 ...
-
-## __@__Reproducible
-```cmd
-$ poetry add autogluon
-$ poetry add "xgboost<3.1"
-```
 
 ## Key takeaways
 - The continuum of TDEs is well described by a thermal blackbody.

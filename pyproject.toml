@@ -8,21 +8,23 @@ authors = [
 ]
 license = "BSD-3-Clause"
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.14"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-autogluon = "^1.4.0"
-xgboost = "<3.1"
+xgboost = "^3.1.2"
 lightgbm = "^4.6.0"
-catboost = "^1.2.8"
-numpy = "<2.3.0"
+# catboost = "^1.2.8"
+numpy = "^2.3.5"
 pandas = "^2.3.3"
 scikit-learn = "^1.7.2"
 extinction = "^0.4.8"
+optuna = "^4.6.0"
+light-curve = "^0.10.5"
+pyarrow = "^22.0.0"
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"
