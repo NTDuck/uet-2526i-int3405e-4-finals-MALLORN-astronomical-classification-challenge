@@ -23,8 +23,8 @@ pandas = "^2.3.3"
 scikit-learn = "^1.7.2"
 extinction = "^0.4.8"
 optuna = "^4.6.0"
-light-curve = "^0.10.5"
 pyarrow = "^22.0.0"
+light-curve = {extras = ["full"], version = "^0.10.5"}
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"
