@@ -25,6 +25,7 @@ extinction = "^0.4.8"
 optuna = "^4.6.0"
 pyarrow = "^22.0.0"
 light-curve = {extras = ["full"], version = "^0.10.5"}
+optuna-integration = {extras = ["lightgbm"], version = "^4.6.0"}
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"

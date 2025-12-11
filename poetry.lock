@@ -1390,6 +1390,53 @@ optional = ["boto3", "cmaes (>=0.12.0)", "google-cloud-storage", "greenlet", "gr
 test = ["coverage", "fakeredis[lua]", "greenlet", "grpcio", "kaleido (<0.4)", "moto", "protobuf (>=5.28.1)", "pytest", "pytest-xdist", "scipy (>=1.9.2)", "torch"]
 
 [[package]]
+name = "optuna-integration"
+version = "4.6.0"
+description = "Integration libraries of Optuna."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "optuna_integration-4.6.0-py3-none-any.whl", hash = "sha256:a02ef2018c02d521d23e364110579c03e53a518894d9b9a76b246b5fb2e027fd"},
+    {file = "optuna_integration-4.6.0.tar.gz", hash = "sha256:fe563b21131656df35d19c05507893fc8cfa596866476225129021556496a09a"},
+]
+
+[package.dependencies]
+lightgbm = {version = "*", optional = true, markers = "extra == \"lightgbm\""}
+optuna = "*"
+scikit-learn = {version = "*", optional = true, markers = "extra == \"lightgbm\""}
+
+[package.extras]
+allennlp = ["allennlp", "jsonnet", "numpy (<2.0.0)", "psutil"]
+botorch = ["botorch (<0.10.0)"]
+catboost = ["catboost", "numpy (<2.0.0)"]
+chainer = ["chainer", "numpy (<2.0.0)"]
+chainermn = ["chainermn", "numpy (<2.0.0)"]
+checking = ["black (<25.9.0)", "blackdoc (<0.4.2)", "hacking", "isort", "mypy", "types-PyYAML", "types-redis", "types-setuptools", "typing_extensions (>=3.10.0.0)"]
+cma = ["cma", "numpy (<2.0.0)"]
+comet = ["comet_ml (>=3.39.3)"]
+dask = ["distributed"]
+document = ["mlflow", "pandas", "scikit-learn (>=0.24.2)", "scipy (>=1.9.2) ; python_version >= \"3.9\"", "sphinx", "sphinx-notfound-page", "sphinx_rtd_theme"]
+fastai = ["fastai (>=2.0.0)"]
+fastaiv2 = ["fastai (>=2.0.0)"]
+keras = ["tensorflow"]
+lightgbm = ["lightgbm", "scikit-learn"]
+mlflow = ["mlflow"]
+mxnet = ["mxnet"]
+pytorch-distributed = ["gpytorch", "gpytorch"]
+pytorch-ignite = ["pytorch-ignite", "pytorch-ignite"]
+pytorch-lightning = ["lightning", "lightning"]
+shap = ["numpy (<2.0.0)", "shap"]
+sklearn = ["pandas", "scikit-learn", "scipy"]
+skorch = ["skorch"]
+tensorboard = ["tensorboard", "tensorflow"]
+tensorflow = ["tensorflow (<=2.15.0)"]
+test = ["coverage", "fakeredis[lua]", "grpcio", "protobuf (>=5.28.1)", "pytest"]
+tfkeras = ["tensorflow"]
+wandb = ["wandb"]
+xgboost = ["xgboost"]
+
+[[package]]
 name = "packaging"
 version = "25.0"
 description = "Core utilities for Python packages"
@@ -2522,4 +2569,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14"
-content-hash = "d4890ade08c21d83addeec16100acad3a35bbd4dac9570683fa8fc3841764f69"
+content-hash = "f030088c2faebf3a4e276e339568c2e1f0b8ea263f760fc248aaee5908f5c0c0"
