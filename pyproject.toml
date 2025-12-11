@@ -8,16 +8,13 @@ authors = [
 ]
 license = "BSD-3-Clause"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12, <3.13"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-xgboost = "^3.1.2"
-lightgbm = "^4.6.0"
-# catboost = "^1.2.8"
 numpy = "^2.3.5"
 pandas = "^2.3.3"
 scikit-learn = "^1.7.2"
@@ -29,6 +26,8 @@ optuna-integration = {extras = ["lightgbm"], version = "^4.6.0"}
 matplotlib = "^3.10.8"
 seaborn = "^0.13.2"
 astropy = "^7.2.0"
+imbalanced-learn = "^0.14.0"
+catboost = "^1.2.8"
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"
