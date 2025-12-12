@@ -1,20 +1,13 @@
 from typer import Typer
 
+from .ingest import download as ingest_download
 
 typer = Typer()
 
 
-@typer.command()
-def hello(name: str):
-    print(f"Hello {name}")
-
-
-@typer.command()
-def goodbye(name: str, formal: bool = False):
-    if formal:
-        print(f"Goodbye Ms. {name}. Have a good day.")
-    else:
-        print(f"Bye {name}!")
+@typer.command(name="ingest-download")
+def download():
+    ingest_download()
 
 
 def run():

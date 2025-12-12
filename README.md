@@ -6,10 +6,9 @@
 - Poetry 2.2.1
 
 ## How to install
-
-<!-- $ poetry env use python3.14 -->
 ```cmd
 $ poetry install
+$ poetry run pre-commit install
 ```
 
 This downloads the Kaggle dataset for the competition.

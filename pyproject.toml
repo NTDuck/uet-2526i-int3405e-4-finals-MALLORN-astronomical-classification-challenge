@@ -37,6 +37,25 @@ rev = "fe304755f030d45676fd22eb686d37065abadada"
 [tool.poetry.group.dev.dependencies]
 python-dotenv = ">=1.2.1,<2.0.0"
 ipykernel = "^7.1.0"
+ruff = "^0.14.9"
+mypy = "^1.19.0"
+pre-commit = "^4.5.0"
 
 [tool.poetry.scripts]
 mallorn = "mallorn.__init__:run"
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B"]
+ignore = []
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
