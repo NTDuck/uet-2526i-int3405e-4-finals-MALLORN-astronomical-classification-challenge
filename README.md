@@ -13,7 +13,7 @@ $ poetry run pre-commit install
 
 This downloads the Kaggle dataset for the competition.
 ```cmd
-$ poetry run kaggle-download
+$ poetry run mallorn ingest
 ```
 
 ## How to run

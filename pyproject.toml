@@ -53,6 +53,9 @@ select = ["E", "W", "F", "I", "N", "UP", "B"]
 ignore = []
 fixable = ["ALL"]
 
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
 [tool.ruff.format]
 quote-style = "double"
 
