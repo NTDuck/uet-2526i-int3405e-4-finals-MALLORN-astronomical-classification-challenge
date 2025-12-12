@@ -8,20 +8,13 @@ def download(dirpath: str = "./resources/kaggle"):
     """
     Download the dataset from Kaggle.
     """
-    kaggle = __load_kaggle()
+    kaggle = _load_kaggle()
     kaggle.competition_download_files(competition="mallorn-astronomical-classification-challenge", path=dirpath)
 
-    __unzip(dirpath)
+    _unzip(dirpath)
 
 
-def submit():
-    """
-    Submit the dataset to Kaggle.
-    """
-    pass
-
-
-def __load_kaggle() -> KaggleApi:
+def _load_kaggle() -> KaggleApi:
     """
     Load an instance of `KaggleApi`.
     """
@@ -34,7 +27,7 @@ def __load_kaggle() -> KaggleApi:
     return kaggle
 
 
-def __unzip(dirpath: str):
+def _unzip(dirpath: str):
     """
     Recursively extract all `.zip` files in `dirpath`, then remove them.
     """
