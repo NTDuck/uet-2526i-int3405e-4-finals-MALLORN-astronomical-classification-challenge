@@ -29,6 +29,7 @@ astropy = "^7.2.0"
 imbalanced-learn = "^0.14.0"
 catboost = "^1.2.8"
 typer = "^0.20.0"
+rich = "^14.2.0"
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"
@@ -42,7 +43,7 @@ mypy = "^1.19.0"
 pre-commit = "^4.5.0"
 
 [tool.poetry.scripts]
-mallorn = "mallorn.__init__:run"
+mallorn = "mallorn.__init__:__call__"
 
 [tool.ruff]
 line-length = 88

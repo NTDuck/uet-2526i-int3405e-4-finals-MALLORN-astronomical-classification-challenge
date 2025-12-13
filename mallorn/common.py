@@ -1,5 +1,17 @@
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Literal
+
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
 
 
 def mkdir(dirpath: str | Path) -> Path:
@@ -9,9 +21,64 @@ def mkdir(dirpath: str | Path) -> Path:
     return dirpath_
 
 
-DL_DIR = mkdir("./artifacts/origin")
-INGEST_DIR = mkdir("./artifacts/interim")
-FEATS_DIR = mkdir("./artifacts/feats")
+@contextmanager
+def mksb():
+    sb = _SpinnerBar()
+    with sb._progress:
+        yield sb
+
+
+class _SpinnerBar:
+    def __init__(self):
+        self._progress = Progress(
+            SpinnerColumn(),
+            TextColumn("[bold yellow]{task.description}"),
+            transient=True,
+        )
+
+    @contextmanager
+    def job(self, description: str):
+        task_id = self._progress.add_task(description, total=None)
+        try:
+            yield task_id
+        finally:
+            self._progress.update(task_id, visible=False)
+
+
+@contextmanager
+def mkpb(total: float):
+    pb = _ProgressBar(total=total)
+    with pb._progress:
+        yield pb
+
+
+class _ProgressBar:
+    def __init__(self, total: float):
+        self._progress = Progress(
+            SpinnerColumn(),
+            TextColumn("[bold yellow]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            TransferSpeedColumn(),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            transient=True,
+        )
+        self._task_id = self._progress.add_task("", total=total)
+
+    @contextmanager
+    def job(self, description: str):
+        self._progress.update(self._task_id, description=description)
+        try:
+            yield
+        finally:
+            self._progress.update(self._task_id, advance=1)
+
+
+ORIGIN_DIR = mkdir("./artifacts/origin")
+INGESTED_DIR = mkdir("./artifacts/interim")
+AUGMENTED_DIR = mkdir("./artifacts/augmented")
+FEATURES_DIR = mkdir("./artifacts/featuress")
 
 DF_SPLITS = [
     "split_01",
