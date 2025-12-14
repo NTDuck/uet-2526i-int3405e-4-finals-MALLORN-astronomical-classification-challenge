@@ -12,14 +12,8 @@ $ poetry run pre-commit install
 ```
 
 ```cmd
-$ git clone https://github.com/kboone/avocado.git
-$ cd avocado
-$ poetry run python setup.py install
-```
-
-This downloads the Kaggle dataset for the competition.
-```cmd
 $ poetry run mallorn ingest
+$ poetry run mallorn featurize
 ```
 
 ## How to run

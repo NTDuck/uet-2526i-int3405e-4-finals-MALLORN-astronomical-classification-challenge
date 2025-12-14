@@ -2,16 +2,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Literal
 
-from rich.progress import (
-    BarColumn,
-    Progress,
-    SpinnerColumn,
-    TaskProgressColumn,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
-)
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn, TransferSpeedColumn
 
 
 def mkdir(dirpath: str | Path) -> Path:
@@ -75,12 +66,8 @@ class _ProgressBar:
             self._progress.update(self._task_id, advance=1)
 
 
-ORIGIN_DIR = mkdir("./artifacts/origin")
-INGESTED_DIR = mkdir("./artifacts/interim")
-AUGMENTED_DIR = mkdir("./artifacts/augmented")
-FEATURES_DIR = mkdir("./artifacts/featuress")
-
-DF_SPLITS = [
+DfType = Literal["train", "test"]
+DfSplit = Literal[
     "split_01",
     "split_02",
     "split_03",
@@ -104,8 +91,12 @@ DF_SPLITS = [
 ]
 
 
-DfType = Literal["train", "test"]
-DfSplit = Literal[
+ORG_DIR = Path("./artifacts/origin")
+ING_DIR = Path("./artifacts/interim")
+AUG_DIR = Path("./artifacts/augmented")
+FEATS_DIR = Path("./artifacts/featuress")
+
+DF_SPLITS: list[DfSplit] = [
     "split_01",
     "split_02",
     "split_03",

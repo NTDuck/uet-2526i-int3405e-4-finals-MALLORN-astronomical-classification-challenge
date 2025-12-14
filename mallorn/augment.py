@@ -1,39 +1,26 @@
 from pathlib import Path
 
 import pandas as pd
+from typer import Typer
 
-import avocado
+from .common import AUG_DIR, DF_SPLITS, ING_DIR, DfType
+from .ingest import load_meta_df, load_obs_df
 
-from .common import AUGMENTED_DIR, DF_SPLITS, INGESTED_DIR
+
+typer = Typer()
 
 
-def augment(ingest_dir: Path = INGESTED_DIR, aug_dir: Path = AUGMENTED_DIR):
-    train_meta_df = pd.read_parquet(ingest_dir / "train_meta.parquet")
-    test_meta_df = pd.read_parquet(ingest_dir / "test_meta.parquet")
+@typer.command()
+def augment(df_type: DfType, ing_dir: Path = ING_DIR, aug_dir: Path = AUG_DIR):
+    meta_df = load_meta_df(df_type, ing_dir)
+    obs_df = pd.concat([load_obs_df(df_type, df_split, ing_dir) for df_split in DF_SPLITS])  # fmt: skip
 
-    train_flc_df = pd.concat(
-        [
-            pd.read_parquet(ingest_dir / f"{df_split}/train_flc.parquet")
-            for df_split in DF_SPLITS
-        ]
-    )
+    # TODO Resample
+    # https://www.sciencedirect.com/science/article/abs/pii/S0031320312001471
+    # https://towardsdatascience.com/imbalanced-data-stop-using-roc-auc-and-use-auprc-instead-46af4910a494/
 
-    # https://avocado-classifier.readthedocs.io/en/latest/api/avocado.AstronomicalObject.html#avocado.AstronomicalObject
-    train_meta_df.rename(
-        columns={
-            "object_id": "object_id",
-            "z": "redshift",
-            "ebv": "galactic_mwebv",
-        }
-    )
-    train_flc_df.rename(
-        columns={
-            "time": "time",
-            "filter": "band",
-            "flux": "flux",
-            "flux_err": "flux_error",
-        }
-    )
+    meta_df.to_parquet(aug_dir / f"{df_type}_log_aug.parquet")
 
-    # TODO Try chunks?
-    df = avocado.Dataset("train_avocado", train_meta_df, train_flc_df)
+
+def load_aug_meta_df(df_type: DfType, aug_dir: Path = AUG_DIR) -> pd.DataFrame:
+    return pd.read_parquet(aug_dir / f"{df_type}_log_aug.parquet")
