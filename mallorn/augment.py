@@ -46,16 +46,6 @@ def augment(df_type: DfType, ing_dir: Path = ING_DIR, aug_dir: Path = AUG_DIR):
             obs_df.to_parquet(aug_dir / f"{df_type}_obs_aug.parquet")
 
 
-# @deprecated
-# def _iter(meta_df: pd.DataFrame, obs_df: pd.DataFrame) -> Iterator[Tuple[Hashable, pd.Series, pd.Series]]:
-#     obs_grps = obs_df.groupby("object_id")
-
-#     for obj_id, meta in meta_df.iterrows():
-#         for _, obs_grp in obs_grps.get_group(obj_id).groupby("filter"):
-#             for _, obs in obs_grp.iterrows():
-#                 yield obj_id, meta, obs
-
-
 _EFF_WLS = {
     "u": np.array([3641]),
     "g": np.array([4704]),
