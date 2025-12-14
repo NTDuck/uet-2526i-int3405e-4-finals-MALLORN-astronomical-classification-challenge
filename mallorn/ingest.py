@@ -89,19 +89,19 @@ def format(df_type: DfType, org_dir: Path = ORG_DIR, ing_dir: Path = ING_DIR):
                     obs_df.to_parquet(mkdir(ing_dir / df_split) / f"{df_type}_obs.parquet")
 
 
-def load_meta_df(df_type: DfType, ing_dir: Path = ING_DIR) -> pd.DataFrame:
-    return pd.read_parquet(ing_dir / f"{df_type}_meta.parquet")
+def load_meta_df(df_type: DfType, ing_dir: Path = ING_DIR, **kwargs) -> pd.DataFrame:
+    return pd.read_parquet(ing_dir / f"{df_type}_meta.parquet", **kwargs)
 
 
-def load_obs_df(df_type: DfType, df_split: DfSplit, ing_dir: Path = ING_DIR) -> pd.DataFrame:
-    return pd.read_parquet(ing_dir / f"{df_split}/{df_type}_obs.parquet")
+def load_obs_df(df_type: DfType, df_split: DfSplit, ing_dir: Path = ING_DIR, **kwargs) -> pd.DataFrame:
+    return pd.read_parquet(ing_dir / f"{df_split}/{df_type}_obs.parquet", **kwargs)
 
 
-def load_obs_dfs(df_type: DfType, ing_dir: Path = ING_DIR) -> dict[DfSplit, pd.DataFrame]:
+def load_obs_dfs(df_type: DfType, ing_dir: Path = ING_DIR, **kwargs) -> dict[DfSplit, pd.DataFrame]:
     obs_dfs = {}
 
     for file in ing_dir.glob(f"*/{df_type}_obs.parquet"):
         df_split = file.parent.name
-        obs_dfs[df_split] = load_obs_df(df_type, df_split, ing_dir)  # pyright: ignore[reportArgumentType]
+        obs_dfs[df_split] = load_obs_df(df_type, df_split, ing_dir, **kwargs)  # pyright: ignore[reportArgumentType]
 
     return obs_dfs

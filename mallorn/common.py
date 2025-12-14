@@ -5,11 +5,9 @@ from typing import Literal
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn, TransferSpeedColumn
 
 
-def mkdir(dirpath: str | Path) -> Path:
-    dirpath_ = Path(dirpath)
-    dirpath_.mkdir(parents=True, exist_ok=True)
-
-    return dirpath_
+def mkdir(dir: Path) -> Path:
+    dir.mkdir(parents=True, exist_ok=True)
+    return dir
 
 
 @contextmanager
@@ -95,3 +93,18 @@ ORG_DIR = Path("./artifacts/origin")
 ING_DIR = Path("./artifacts/interim")
 AUG_DIR = Path("./artifacts/augmented")
 FEATS_DIR = Path("./artifacts/featuress")
+
+# TODO
+# Assuming GB, no imputation, no scaling, only minimal cleaning.
+# Plot f1 score changes over trials & hyperparams
+# Plot feature importance
+# Set seeds to 67
+# De-extinct, redshift dialation, g, r, t, combine to create a light only TDE have
+# Something once suggested that Gaussian noise should be added to training set to simulate that of testing set (FLux/Redshift?)
+# https://github.com/congkx123789/MALLORN_Astronomical
+# https://github.com/Alwin19/mallorn_lightcurve_visualization
+# https://github.com/indrajithprabaswara/MALLORN-Astronomical-Classification-Challenge
+# https://github.com/BhargavKumarNath/MALLORN-Astronomical-Classification-Challenge
+# https://github.com/clouder0073/MALLORN-Astronomical-Classification-Challenge
+# Plot confusion matrix
+# if TDEs are about 5% in submission.csv (target=1) higher chance of high score (someone once suggested)

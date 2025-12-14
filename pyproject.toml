@@ -48,6 +48,7 @@ mallorn = "mallorn.__init__:__call__"
 [tool.ruff]
 line-length = 180
 indent-width = 4
+exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "B"]
