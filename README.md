@@ -7,6 +7,15 @@
 
 ## How to install
 ```cmd
+$ wsl
+$ sudo apt-get update
+$ sudo apt-get install libgsl-dev pipx
+
+$ pipx install poetry
+$ pipx ensurepath
+```
+
+```cmd
 $ poetry install
 $ poetry run pre-commit install
 ```
