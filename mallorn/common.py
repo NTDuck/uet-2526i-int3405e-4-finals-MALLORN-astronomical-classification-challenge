@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
@@ -8,6 +9,10 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 def mkdir(dir: Path) -> Path:
     dir.mkdir(parents=True, exist_ok=True)
     return dir
+
+
+def now() -> str:
+    return datetime.now().astimezone().strftime("%Y%m%d-%H%M%S-%z")
 
 
 @contextmanager
@@ -93,6 +98,10 @@ ORG_DIR = Path("./artifacts/origin")
 ING_DIR = Path("./artifacts/interim")
 AUG_DIR = Path("./artifacts/augmented")
 FEATS_DIR = Path("./artifacts/featuress")
+MODELS_DIR = Path("./artifacts/models")
+PREDS_DIR = Path("./artifacts/predictions")
+
+SEED = 67
 
 # TODO
 # Assuming GB, no imputation, no scaling, only minimal cleaning.
