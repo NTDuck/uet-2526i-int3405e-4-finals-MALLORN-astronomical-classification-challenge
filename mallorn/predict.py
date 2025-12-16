@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from typer import Typer
 
-from .common import FEATS_DIR, MODELS_DIR, PREDS_DIR, mksb, now
+from .common import FEATS_DIR, MODELS_DIR, PREDS_DIR, mkdir, mksb, now
 from .featurize import load_feats_df as _load_feats_df
 
 
@@ -21,24 +21,19 @@ def predict(feats_dir: Path = FEATS_DIR, models_dir: Path = MODELS_DIR, preds_di
         with sb.job("Loading featurized datasets"):
             test_feats_df = _load_feats_df(df_type="test", feats_dir=feats_dir)
 
-            X_test = test_feats_df.drop(columns=["target"])
-
-            with open(max((models_dir / "catboost").glob("params-*.json"))) as file:
-                cb_params = json.load(file)
-
             with open(max((models_dir / "τ").glob("*.json"))) as file:
                 τ = json.load(file)["best_τ"]
 
         with sb.job("Ensembling Catboost predictions"):
-            cb_models = [cb.CatBoostClassifier().load_model(file) for file in load_latest_cb_models(models_dir)]
-            avg_probs = np.mean([model.predict_proba(X_test)[:, 1] for model in cb_models], axis=0)
+            cb_models = load_latest_cb_models(models_dir=models_dir)
+            avg_probs = np.mean([model.predict_proba(test_feats_df)[:, 1] for model in cb_models], axis=0)
 
         with sb.job("Applying τ"):
             y_pred = (avg_probs > τ).astype(int)
 
         with sb.job("Saving predictions"):
-            preds_df = pd.DataFrame({"object_id": X_test.index, "target": y_pred})
-            preds_df.to_csv(preds_dir / f"predictions-{now()}.csv", index=False)
+            preds_df = pd.DataFrame({"object_id": test_feats_df.index, "target": y_pred})
+            preds_df.to_csv(mkdir(preds_dir) / f"predictions-{now()}.csv", index=False)
 
 
 def load_latest_cb_models(models_dir: Path) -> list[cb.CatBoostClassifier]:

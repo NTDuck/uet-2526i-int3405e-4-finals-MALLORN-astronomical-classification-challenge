@@ -30,6 +30,7 @@ catboost = "^1.2.8"
 typer = "^0.20.0"
 rich = "^14.2.0"
 feets = "^1.0.1"
+nbformat = "^5.10.4"
 
 [tool.poetry.dependencies.kaggle]
 git = "https://github.com/NTDuck/kaggle-api.git"
