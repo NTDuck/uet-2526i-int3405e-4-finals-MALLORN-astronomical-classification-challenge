@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn, TransferSpeedColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn
 
 
 def mkdir(dir: Path) -> Path:
@@ -26,7 +26,7 @@ class _SpinnerBar:
     def __init__(self):
         self._progress = Progress(
             SpinnerColumn(),
-            TextColumn("[bold yellow]{task.description}"),
+            TextColumn("{task.description}"),
             transient=True,
         )
 
@@ -50,10 +50,9 @@ class _ProgressBar:
     def __init__(self, total: float):
         self._progress = Progress(
             SpinnerColumn(),
-            TextColumn("[bold yellow]{task.description}"),
+            TextColumn("{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            TransferSpeedColumn(),
             TimeElapsedColumn(),
             TimeRemainingColumn(),
             transient=True,

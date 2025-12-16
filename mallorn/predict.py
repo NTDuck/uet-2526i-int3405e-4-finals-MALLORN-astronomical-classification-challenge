@@ -25,30 +25,25 @@ def predict(feats_dir: Path = FEATS_DIR, models_dir: Path = MODELS_DIR, preds_di
                 τ = json.load(file)["best_τ"]
 
         with sb.job("Ensembling Catboost predictions"):
-            cb_models = load_latest_cb_models(models_dir=models_dir)
+            cb_models = _load_cb_models(models_dir=models_dir)
             avg_probs = np.mean([model.predict_proba(test_feats_df)[:, 1] for model in cb_models], axis=0)
 
-        with sb.job("Applying τ"):
+        with sb.job(f"Applying τ={τ:6f}"):
             y_pred = (avg_probs > τ).astype(int)
 
-        with sb.job("Saving predictions"):
+        with sb.job(f"Saving predictions to {preds_dir / f'predictions-{now()}.csv'}"):
             preds_df = pd.DataFrame({"object_id": test_feats_df.index, "target": y_pred})
             preds_df.to_csv(mkdir(preds_dir) / f"predictions-{now()}.csv", index=False)
 
 
-def load_latest_cb_models(models_dir: Path) -> list[cb.CatBoostClassifier]:
-    cb_dir = models_dir / "catboost"
-
+def _load_cb_models(models_dir: Path) -> list[cb.CatBoostClassifier]:
     fold_re = re.compile(r"model-fold-(\d+)-")
 
     groups: dict[int, list[Path]] = defaultdict(list)
-    for p in cb_dir.glob("model-fold-*.cbm"):
-        fold = int(fold_re.search(p.name).group(1))  # pyright: ignore[reportOptionalMemberAccess]
-        groups[fold].append(p)
+    for file in (models_dir / "catboost").glob("model-fold-*.cbm"):
+        fold = int(fold_re.search(file.name).group(1))  # pyright: ignore[reportOptionalMemberAccess]
+        groups[fold].append(file)
 
-    latest = (
-        max(files)  # filename order == time order
-        for files in groups.values()
-    )
+    files = (max(files) for files in groups.values())
 
-    return [cb.CatBoostClassifier().load_model(p) for p in latest]
+    return [cb.CatBoostClassifier().load_model(file) for file in files]
