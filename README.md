@@ -20,18 +20,13 @@ $ poetry install
 $ poetry run pre-commit install
 ```
 
-```cmd
-$ poetry run mallorn ingest
-$ poetry run mallorn featurize
-```
-
 ## How to run
 ```cmd
 $ poetry run mallorn ingest
 $ poetry run mallorn augment-all
 $ poetry run mallorn featurize-all
 $ poetry run mallorn opt-cb
-$ poetry run mallorn opt_τ
+$ poetry run mallorn opt-τ
 $ poetry run mallorn predict
 ```
 
