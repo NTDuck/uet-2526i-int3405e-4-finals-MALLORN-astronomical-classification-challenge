@@ -1,0 +1,67 @@
+[project]
+name = "mallorn"
+version = "0.1.0"
+description = "tomfoolery"
+authors = [
+    { name = "Nguyễn Tư Đức", email = "23021534@gmail.com" },
+    { name = "Phạm Trung Hiếu", email = "23021554@vnu.edu.vn "}
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+requires-python = ">=3.12, <3.13"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+numpy = "^2.3.5"
+pandas = "^2.3.3"
+scikit-learn = "^1.7.2"
+extinction = "^0.4.8"
+optuna = "^4.6.0"
+pyarrow = "^22.0.0"
+optuna-integration = {extras = ["lightgbm"], version = "^4.6.0"}
+matplotlib = "^3.10.8"
+seaborn = "^0.13.2"
+astropy = "^7.2.0"
+imbalanced-learn = "^0.14.0"
+catboost = "^1.2.8"
+typer = "^0.20.0"
+rich = "^14.2.0"
+feets = "^1.0.1"
+nbformat = "^5.10.4"
+
+[tool.poetry.dependencies.kaggle]
+git = "https://github.com/NTDuck/kaggle-api.git"
+rev = "fe304755f030d45676fd22eb686d37065abadada"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = ">=1.2.1,<2.0.0"
+ipykernel = "^7.1.0"
+ruff = "^0.14.9"
+mypy = "^1.19.0"
+pre-commit = "^4.5.0"
+
+[tool.poetry.scripts]
+mallorn = "mallorn.__init__:__call__"
+
+[tool.ruff]
+line-length = 180
+indent-width = 4
+exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B"]
+ignore = []
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
