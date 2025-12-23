@@ -1,175 +1,203 @@
 import json
+import re
 from pathlib import Path
 
 import catboost as cb
 import numpy as np
 import optuna
-from sklearn.metrics import average_precision_score, precision_recall_curve
+import pandas as pd
+from sklearn.metrics import f1_score, precision_recall_curve
 from sklearn.model_selection import StratifiedKFold
 from typer import Typer
 
-from .common import FEATS_DIR, MODELS_DIR, SEED, mkdir, mksb, now
+from .common import FEATS_DIR, MODELS_DIR, SEED, mkdir
 from .featurize import load_feats_df as _load_feats_df
 
 
 typer = Typer()
 
 
+def _get_root_id(obj_id: str) -> str:
+    """Removes _aug_X suffix to get the original object ID."""
+    return re.sub(r"_aug_\d+$", "", str(obj_id))
+
+
+def _get_clean_splits(df: pd.DataFrame, n_splits: int = 5, seed: int = SEED):
+    """
+    Creates folds based on ORIGINAL objects only.
+    Ensures Train gets (Originals + Clones), Validation gets (Originals only).
+    """
+    df = df.copy()
+    df["root_id"] = df.index.map(_get_root_id)
+    df["is_aug"] = df.index.str.contains("_aug_")
+
+    originals = df[~df["is_aug"]]
+    if originals.empty:
+        skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+        for t, v in skf.split(df, df["target"]):
+            yield t, v
+        return
+
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+
+    for train_idx_orig, val_idx_orig in skf.split(originals, originals["target"]):
+        train_roots = set(originals.iloc[train_idx_orig]["root_id"])
+        val_roots = set(originals.iloc[val_idx_orig]["root_id"])
+
+        train_mask = df["root_id"].isin(train_roots)
+        val_mask = df["root_id"].isin(val_roots) & (~df["is_aug"])
+
+        yield np.where(train_mask)[0], np.where(val_mask)[0]
+
+
 @typer.command(name="opt-cb")
-def opt_cb(n_trials: int | None = None, feats_dir: Path = FEATS_DIR):
-    with mksb() as sb:
-        with sb.job("Loading featurized dataset"):
-            feats_df = _load_feats_df(df_type="train", feats_dir=feats_dir)
-            X = feats_df.drop(columns=["target"])
-            y = feats_df["target"]
+def opt_cb(
+    n_trials: int = 50,
+    feats_dir: Path = FEATS_DIR,
+    models_dir: Path = MODELS_DIR,
+):
+    """Optimize CatBoost Hyperparameters with Focal Loss and Leakage-Free Validation."""
+    df = _load_feats_df(df_type="train", feats_dir=feats_dir)
 
-            # Calculate imbalance ratio for scale_pos_weight
-            N_TDES = y.sum()
-            N_NON_TDES = len(y) - N_TDES
-            base_scale = N_NON_TDES / N_TDES if N_TDES > 0 else 1.0
+    X = df.drop(columns=["target", "split", "SpecType", "English Translation"], errors="ignore")
+    y = df["target"]
 
-    def objective(trial: optuna.Trial):
-        loss_type = trial.suggest_categorical("loss_type", ["Logloss", "Focal"])
+    X = X.replace([np.inf, -np.inf], np.nan)
 
+    print(f"Optimization Start: {len(df)} samples ({y.sum()} positives)")
+    print("Using Focal Loss (No LogLoss/ScalePosWeight) with Leakage-Free Validation")
+
+    def objective(trial):
+        # 1. Suggest Focal Loss specific parameters
+        # alpha: balancing parameter (similar to scale_pos_weight inverse).
+        # Lower alpha downweights negatives. range [0, 1].
+        focal_alpha = trial.suggest_float("focal_alpha", 0.1, 0.7)
+
+        # gamma: focusing parameter. Higher gamma focuses more on hard examples.
+        focal_gamma = trial.suggest_float("focal_gamma", 0.5, 5.0)
+
+        # 2. Other Hyperparameters
+        # Note: Removed scale_pos_weight as Focal Loss handles imbalance via alpha
         params = {
-            # Tree Structure
-            "grow_policy": trial.suggest_categorical("grow_policy", ["SymmetricTree", "Depthwise", "Lossguide"]),
-            "depth": trial.suggest_int("depth", 4, 10),
-            # Learning Dynamics
-            "iterations": trial.suggest_int("iterations", 500, 3000),
-            "learning_rate": trial.suggest_float("learning_rate", 1e-4, 0.3, log=True),
-            # Regularization (Crucial for high-dim spectral data)
-            "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", 1e-2, 100.0, log=True),
-            "subsample": trial.suggest_float("subsample", 0.5, 1.0),
-            "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.5, 1.0),
-            "random_strength": trial.suggest_float("random_strength", 1e-2, 20.0, log=True),
-            "bagging_temperature": trial.suggest_float("bagging_temperature", 0.0, 5.0),
-            # Rare Event Handling
-            # Prevent the model from "averaging out" the few TDEs in a leaf.
-            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 100),
-            # Fixed
-            "task_type": "GPU",
+            "iterations": trial.suggest_int("iterations", 500, 2000),
+            "depth": trial.suggest_int("depth", 4, 8),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.1, log=True),
+            "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", 1e-3, 10.0, log=True),
+            "border_count": trial.suggest_int("border_count", 32, 255),
+            "bagging_temperature": trial.suggest_float("bagging_temperature", 0.0, 1.0),
+            "random_strength": trial.suggest_float("random_strength", 1e-9, 10.0, log=True),
+            # Construct the CatBoost specific string for Focal Loss
+            "loss_function": f"Focal:focal_alpha={focal_alpha};focal_gamma={focal_gamma}",
             "eval_metric": "PRAUC",
-            "verbose": False,
             "random_seed": SEED,
+            "verbose": False,
             "allow_writing_files": False,
-            "thread_count": 4,
         }
 
-        if loss_type == "Logloss":
-            params["loss_function"] = "Logloss"
-            w_mult = trial.suggest_float("weight_multiplier", 0.5, 3.0)
-            params["scale_pos_weight"] = base_scale * w_mult
-        else:  # if loss_type == "Focal"
-            alpha = trial.suggest_float("focal_alpha", 0.1, 0.9)
-            gamma = trial.suggest_float("focal_gamma", 0.5, 5.0)
-            params["loss_function"] = f"Focal:focal_alpha={alpha};focal_gamma={gamma}"
+        f1_scores = []
 
-        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
-        prauc_scores = []
-
-        for train_idx, val_idx in skf.split(X, y):
+        for train_idx, val_idx in _get_clean_splits(df, n_splits=5):
             X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
             X_val, y_val = X.iloc[val_idx], y.iloc[val_idx]
 
             model = cb.CatBoostClassifier(**params)
-            model.fit(X_train, y_train, eval_set=(X_val, y_val), early_stopping_rounds=100, verbose=False)
+            model.fit(
+                X_train,
+                y_train,
+                eval_set=(X_val, y_val),
+                # early_stopping_rounds=50,
+                verbose=False,
+            )
 
-            pred_probs = model.predict_proba(X_val)[:, 1]
-            prauc_scores.append(average_precision_score(y_val, pred_probs))
+            preds = model.predict(X_val)
+            f1 = f1_score(y_val, preds)
+            f1_scores.append(f1)
 
-        return np.mean(prauc_scores)
+        return np.mean(f1_scores)
 
-    study = optuna.create_study(storage="sqlite:///optuna.db", direction="maximize", study_name="cb_study_v2", load_if_exists=True)
-    try:
-        study.optimize(objective, n_trials=n_trials, show_progress_bar=True)  # pyright: ignore[reportArgumentType]
-    except KeyboardInterrupt:
-        print(f"Catboost optimized with best AUC: {study.best_value:.6f}")
+    study = optuna.create_study(storage="sqlite:///optuna.db", direction="maximize", study_name="cb-study-v5", load_if_exists=True)
+    study.optimize(objective, n_trials=n_trials)  # pyright: ignore[reportArgumentType]
+
+    print("Best params:", study.best_params)
+
+    # Reconstruct the full params dictionary including the constructed loss string
+    best_params = study.best_params.copy()
+
+    # Extract alpha/gamma to build the string, then remove them as raw keys
+    # (CatBoost doesn't accept 'focal_alpha' as a direct kwarg, only inside loss_function string)
+    f_alpha = best_params.pop("focal_alpha")
+    f_gamma = best_params.pop("focal_gamma")
+
+    final_params = {
+        **best_params,
+        "loss_function": f"Focal:focal_alpha={f_alpha};focal_gamma={f_gamma}",
+        "eval_metric": "F1",
+        "random_seed": SEED,
+        "verbose": False,
+        "allow_writing_files": False,
+    }
+
+    mkdir(models_dir)
+    with open(models_dir / "best_params_cb.json", "w") as f:
+        json.dump(final_params, f, indent=4)
 
 
 @typer.command(name="opt-τ")
-def opt_τ(feats_dir: Path = FEATS_DIR, models_dir: Path = MODELS_DIR):
-    with mksb() as sb:
-        with sb.job("Loading featurized dataset"):
-            train_feats_df = _load_feats_df(df_type="train", feats_dir=feats_dir)
-            X = train_feats_df.drop(columns=["target"])
-            y = train_feats_df["target"]
+def opt_τ(
+    feats_dir: Path = FEATS_DIR,
+    models_dir: Path = MODELS_DIR,
+):
+    """Optimize Threshold (τ) using Rank-Based Strategy."""
+    df = _load_feats_df(df_type="train", feats_dir=feats_dir)
 
-            study = optuna.load_study(storage="sqlite:///optuna.db", study_name="cb_study_v2")
+    X = df.drop(columns=["target", "split", "SpecType", "English Translation"], errors="ignore").replace([np.inf, -np.inf], np.nan)
+    y = df["target"]
 
-            cb_params = study.best_params
+    # Load best params (now contains the Focal Loss string)
+    with open(models_dir / "best_params_cb.json") as f:
+        params = json.load(f)
+        print(f"Loaded Params with Loss: {params.get('loss_function')}")
 
-            loss_type = cb_params.pop("loss_type", "Logloss")
-            if loss_type == "Logloss":
-                cb_params["loss_function"] = "Logloss"
-                w_mult = cb_params.pop("weight_multiplier", 1.0)
+    oof_probs = np.zeros(len(df))
+    valid_mask_all = np.zeros(len(df), dtype=bool)
 
-                # Calculate base scale again to be safe
-                n_pos = y.sum()
-                n_neg = len(y) - n_pos
-                base_scale = n_neg / n_pos if n_pos > 0 else 1.0
+    print("Training for Threshold Optimization...")
+    for train_idx, val_idx in _get_clean_splits(df, n_splits=20):
+        X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
+        X_val, y_val = X.iloc[val_idx], y.iloc[val_idx]
 
-                cb_params["scale_pos_weight"] = base_scale * w_mult
-            else:
-                alpha = cb_params.pop("focal_alpha")
-                gamma = cb_params.pop("focal_gamma")
-                cb_params["loss_function"] = f"Focal:focal_alpha={alpha};focal_gamma={gamma}"
+        model = cb.CatBoostClassifier(**params)
+        model.fit(X_train, y_train, eval_set=(X_val, y_val), early_stopping_rounds=50, verbose=False)
 
-            cb_params.update({
-                "task_type": "GPU",
-                "eval_metric": "PRAUC",
-                "verbose": False,
-                "random_seed": SEED,
-                "allow_writing_files": False,
-                "thread_count": 4,
-            })  # fmt: skip
+        oof_probs[val_idx] = model.predict_proba(X_val)[:, 1]
+        valid_mask_all[val_idx] = True
 
-        with sb.job("Populating OOF predictions"):
-            skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=SEED)
+    y_real = y[valid_mask_all]
+    probs_real = oof_probs[valid_mask_all]
 
-            oof_preds = np.zeros(len(X))
+    # Strategy 1: Standard F1 Maximization
+    precisions, recalls, thresholds = precision_recall_curve(y_real, probs_real)
+    f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-10)
+    best_idx = np.argmax(f1_scores)
+    best_τ_f1 = thresholds[best_idx]
+    best_score_f1 = f1_scores[best_idx]
 
-            for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
-                X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
-                X_val, y_val = X.iloc[val_idx], y.iloc[val_idx]
+    # Strategy 2: Rank-Based (Top 5%)
+    target_ratio = 0.05
+    k = int(len(probs_real) * target_ratio)
+    sorted_probs = np.sort(probs_real)[::-1]
+    best_τ_rank = sorted_probs[k]
 
-                cb_model = cb.CatBoostClassifier(**cb_params)
-                cb_model.fit(X_train, y_train, eval_set=(X_val, y_val), early_stopping_rounds=100, verbose=False)
+    y_pred_rank = (probs_real >= best_τ_rank).astype(int)
+    best_score_rank = f1_score(y_real, y_pred_rank)
 
-                # Save model for prediction phase
-                cb_model.save_model(mkdir(models_dir / "catboost") / f"model-fold-{fold}-{now()}.cbm")
+    print("\n--- Threshold Optimization Results ---")
+    print(f"1. Max F1 Threshold: {best_τ_f1:.4f} (CV F1: {best_score_f1:.4f})")
+    print(f"2. Rank-Based (Top 5%): {best_τ_rank:.4f} (CV F1: {best_score_rank:.4f})")
 
-                oof_preds[val_idx] = cb_model.predict_proba(X_val)[:, 1]
+    final_τ = best_τ_rank if best_score_rank > (best_score_f1 - 0.02) else best_τ_f1
 
-        with sb.job("Optimizing Threshold τ for F1"):
-            best_τ, best_f1 = _opt_τ_and_f1(y, oof_preds)
+    print(f"\n>> Selected Threshold: {final_τ:.4f}")
 
-            with open(mkdir(models_dir / "τ") / f"{now()}.json", "w") as file:
-                json.dump({
-                    "best_τ": best_τ,
-                    "best_f1": best_f1,
-                }, file, indent=4)  # fmt: skip
-
-            print(f"Threshold optimized with best F1: {best_f1:.6f}; best τ: {best_τ:.6f}")
-
-
-def _opt_τ_and_f1(y: np.typing.ArrayLike, y_probs: np.ndarray) -> tuple[float, float]:
-    y = np.array(y)
-    precision, recall, τs = precision_recall_curve(y, y_probs)
-
-    numerator = 2 * precision * recall
-    denominator = precision + recall
-
-    f1s = np.divide(
-        numerator,
-        denominator,
-        out=np.zeros_like(denominator),
-        where=denominator != 0,
-    )
-
-    best_idx = np.argmax(f1s)
-    best_f1 = f1s[best_idx]
-    # Handle edge case where best_idx is the last element (τ is undefined there in sklearn)
-    best_τ = τs[best_idx] if best_idx < len(τs) else τs[-1]
-
-    return float(best_τ), float(best_f1)
+    with open(models_dir / "best_τ.json", "w") as f:
+        json.dump({"best_τ": float(final_τ), "strategy": "rank" if final_τ == best_τ_rank else "f1"}, f)

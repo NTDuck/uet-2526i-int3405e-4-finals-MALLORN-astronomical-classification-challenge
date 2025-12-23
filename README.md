@@ -36,3 +36,9 @@ $ poetry run mallorn opt-cb
 $ poetry run mallorn opt-τ
 $ poetry run mallorn predict
 ```
+
+## TODO
+- Add illegal data
+- Copy feature engineering steps
+- Gaussian Process
+- Different fine-tuning strategy
