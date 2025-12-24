@@ -212,3 +212,6 @@ __marimo__/
 
 # Avocado library
 /lib-avocado/
+
+# Optuna Artifacts
+optuna.db

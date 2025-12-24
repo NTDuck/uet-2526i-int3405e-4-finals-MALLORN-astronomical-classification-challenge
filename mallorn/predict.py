@@ -1,13 +1,11 @@
-import json
 from pathlib import Path
 
-import catboost as cb
+import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from typer import Typer
 
-# Import common utilities consistent with your project structure
-from .common import FEATS_DIR, MODELS_DIR, PREDS_DIR, SEED, mkdir
+from .common import FEATS_DIR, MODELS_DIR, PREDS_DIR, mkdir, mksb, now
 from .featurize import load_feats_df as _load_feats_df
 
 
@@ -18,86 +16,65 @@ typer = Typer()
 def predict(
     feats_dir: Path = FEATS_DIR,
     models_dir: Path = MODELS_DIR,
-    submissions_dir: Path = PREDS_DIR,
-    out_name: str = "submission.csv",
+    preds_dir: Path = PREDS_DIR,
+    top_k_percent: float = 5.0,  # Optimal strategy: Enforce ~5% positive rate
 ):
     """
-    Retrains CatBoost on full data using best params (Focal Loss) and generates predictions.
+    Generate predictions using the trained LightGBM model.
+    Uses a Rank-Based Threshold (Top-K%) to handle class imbalance robustly.
     """
-    # --- 1. Load Data ---
-    print(">> Loading Data...")
-    df_train = _load_feats_df(df_type="train", feats_dir=feats_dir)
-    df_test = _load_feats_df(df_type="test", feats_dir=feats_dir)
+    with mksb() as sb:
+        # 1. Load Data
+        with sb.job("Loading test features"):
+            test_feats_df = _load_feats_df(df_type="test", feats_dir=feats_dir)
 
-    # --- 2. Prepare Feature Matrices ---
-    # Drop non-feature columns
-    drop_cols = ["target", "split", "SpecType", "English Translation"]
+            # Prepare X (Drop metadata)
+            # Ensure these match the drop list in optimize.py
+            ignore_cols = ["target", "object_id", "split", "English Translation", "SpecType"]
+            X_test = test_feats_df.drop(columns=ignore_cols, errors="ignore")
 
-    # Prepare Train
-    X_train = df_train.drop(columns=drop_cols, errors="ignore")
-    y_train = df_train["target"]
-    X_train = X_train.replace([np.inf, -np.inf], np.nan)
+            # Keep IDs for submission
+            ids = test_feats_df.index if "object_id" not in test_feats_df.columns else test_feats_df["object_id"]
 
-    # Prepare Test
-    X_test = df_test.drop(columns=drop_cols, errors="ignore")
-    X_test = X_test.replace([np.inf, -np.inf], np.nan)
+        # 2. Load Model
+        model_path = models_dir / "lgb_final.txt"
+        with sb.job(f"Loading LightGBM model from {model_path}"):
+            if not model_path.exists():
+                raise FileNotFoundError(f"Model not found at {model_path}. Run `optimize.py train-best` first.")
 
-    # --- 3. Load Best Parameters and Threshold ---
-    params_path = models_dir / "best_params_cb.json"
-    τ_path = models_dir / "best_τ.json"
+            model = lgb.Booster(model_file=str(model_path))
 
-    if not params_path.exists() or not τ_path.exists():
-        print("❌ Error: 'best_params_cb.json' or 'best_τ.json' not found.")
-        print("   Please run 'opt-cb' and 'opt-τ' first.")
-        return
+        # 3. Predict Probabilities
+        with sb.job("Generating probabilities"):
+            y_probs = model.predict(X_test)
 
-    with open(params_path) as f:
-        best_params = json.load(f)
+        # 4. Apply Rank-Based Thresholding (The "Optimal" Strategy)
+        with sb.job(f"Applying Top-{top_k_percent}% Threshold Strategy"):
+            # Calculate the threshold value that separates the top k%
+            # np.percentile uses 0-100 scale, so we want the (100 - k)-th percentile
+            threshold = np.percentile(y_probs, 100 - top_k_percent)
 
-    with open(τ_path) as f:
-        τ_data = json.load(f)
-        best_τ = τ_data["best_τ"]
+            y_pred = (y_probs >= threshold).astype(int)
 
-    print(f"   Loaded Loss Function: {best_params.get('loss_function')}")
-    print(f"   Loaded Threshold: {best_τ:.4f} (Strategy: {τ_data.get('strategy', 'unknown')})")
+            n_pos = y_pred.sum()
+            print(f"\n   [Info] Top-{top_k_percent}% Threshold: {threshold:.6f}")
+            print(f"   [Info] Positive Predictions: {n_pos}/{len(y_probs)} ({n_pos / len(y_probs):.2%})")
 
-    # --- 4. Retrain on Full Dataset ---
-    print(f">> Retraining on full dataset ({len(X_train)} samples)...")
+        # 5. Save Output
+        out_file = preds_dir / f"predictions-{now()}.csv"
+        with sb.job(f"Saving predictions to {out_file}"):
+            preds_df = pd.DataFrame(
+                {
+                    "object_id": ids,
+                    # "prob_tde": y_probs, # Useful for debugging/ensembling
+                    "target": y_pred,
+                }
+            )
 
-    # Ensure consistency
-    best_params["random_seed"] = SEED
-    best_params["verbose"] = False
+            # Ensure directory exists
+            mkdir(preds_dir)
 
-    # Initialize and Fit
-    # CatBoost will automatically parse the "Focal:alpha=...;gamma=..." string in best_params
-    model = cb.CatBoostClassifier(**best_params)
-    model.fit(X_train, y_train)
-
-    # --- 5. Predict on Test ---
-    print(">> Generating predictions...")
-    probs = model.predict_proba(X_test)[:, 1]
-
-    # Apply the optimized threshold
-    preds = (probs >= best_τ).astype(int)
-
-    # --- 6. Save Submission ---
-    mkdir(submissions_dir)
-    submission_path = submissions_dir / out_name
-
-    # Create submission DataFrame
-    # Assuming df_test.index contains the object/sample IDs
-    submission = pd.DataFrame({"object_id": df_test.index, "target": preds})
-
-    # Optional: Save probabilities to a separate file for potential ensembling later
-    probs_df = pd.DataFrame({"object_id": df_test.index, "prob": probs})
-    probs_df.to_csv(submissions_dir / "probs_cb.csv", index=False)
-
-    # Save final submission
-    submission.to_csv(submission_path, index=False)
-
-    print(f"✅ Submission saved to: {submission_path}")
-    print(f"   Positive Predictions: {preds.sum()} / {len(preds)} ({preds.mean():.2%})")
-
-
-if __name__ == "__main__":
-    typer()
+            # Save strictly as submission format (object_id, target) if needed,
+            # but keeping prob_tde is helpful for analysis.
+            # The competition likely expects 'object_id' and 'target'.
+            preds_df.to_csv(out_file, index=False)

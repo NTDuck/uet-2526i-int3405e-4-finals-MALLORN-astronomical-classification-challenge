@@ -42,3 +42,6 @@ $ poetry run mallorn predict
 - Copy feature engineering steps
 - Gaussian Process
 - Different fine-tuning strategy
+
+https://github.com/NTDuck/uet-2526i-int3405e-4-finals-MALLORN-astronomical-classification-challenge
+https://i.ibb.co/3YF86x1F/Screenshot-2025-12-24-095759.png
